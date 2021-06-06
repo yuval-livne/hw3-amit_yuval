@@ -18,8 +18,15 @@ class SingleLink(Link):
                     min = current_dist
         return min
 
+    @staticmethod
+    def print_link():
+        print("single link")
+
 
 class CompleteLink(Link):
+    @staticmethod
+    def print_link():
+        print("complete link")
 
     def compute(self, cluster, other):
         max = cluster.samples[0].compute_euclidean_distance(other.samples[0])
@@ -29,4 +36,5 @@ class CompleteLink(Link):
                 if (current_dist > max):
                     max = current_dist
         return max
+
 

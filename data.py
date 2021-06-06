@@ -14,8 +14,12 @@ class Data:
 
     def create_samples(self):
         sample_list = []
+        genes = []
         for record in range(len(self.data_dict["samples"])):
             sample_id = self.data_dict["samples"][record]
-            genes = list(self.data_dict.keys())[2:][record]
+            genes_cols = list(self.data_dict.keys())[2:]
+            for gene in genes_cols:
+                genes.append(self.data_dict[gene][record])
             label = self.data_dict["type"][record]
             sample_list.append(Sample(sample_id, genes, label))
+        return sample_list
