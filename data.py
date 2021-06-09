@@ -1,6 +1,7 @@
 import pandas
 from sample import Sample
 
+
 class Data:
     def __init__(self, path):
         self.path = path
@@ -8,11 +9,13 @@ class Data:
         self.data_dict
 
     def load_data(self):
+        """loads the data from the csv into a dictionary and returns it"""
         df = pandas.read_csv(self.path)
         self.data_dict = df.to_dict(orient="list")
         return self.data_dict
 
     def create_samples(self):
+        """creates list of samples from the data dictionary and returns it"""
         sample_list = []
         genes = []
         for record in range(len(self.data_dict["samples"])):
