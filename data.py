@@ -22,4 +22,5 @@ class Data:
                 genes.append(self.data_dict[gene][record])
             label = self.data_dict["type"][record]
             sample_list.append(Sample(sample_id, genes, label))
+            genes = []
         return sample_list

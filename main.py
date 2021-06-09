@@ -16,6 +16,7 @@ def main(argv):
     single_agglo = agglo.AgglomerativeClustering(single_link, samples_list)
     complete_agglo = agglo.AgglomerativeClustering(complete_link, samples_list)
     single_agglo.run(MAX_CLUSTERS)
+    print()
     complete_agglo.run(MAX_CLUSTERS)
 
 # Press the green button in the gutter to run the script.

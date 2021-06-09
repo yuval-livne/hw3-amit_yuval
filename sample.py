@@ -5,4 +5,6 @@ class Sample:
         self.label = label
 
     def compute_euclidean_distance(self, other):
-        return sum([(my-his)**2 for my, his in zip(self.genes, other.genes)])**0.5
+        check= sum([(my-his)**2 for my, his in zip(self.genes, other.genes)])**0.5
+        return check
+        print("hey")

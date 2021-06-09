@@ -1,7 +1,8 @@
 import cluster
 import math
-class AgglomerativeClustering:
 
+
+class AgglomerativeClustering:
 
     def __init__(self, link, samples):
         self.samples = samples
@@ -14,9 +15,15 @@ class AgglomerativeClustering:
             for sample in clus.samples:
                 sum_dist = 0
                 for other in clus.samples:
-                    # sum_dist += sample.compute_euclidean_distance(other)
-                    sum_dist += matrix[(sample, other)]
-                sil_in = float(sum_dist/(len(clus.samples - 1)))
+                    if sample.s_id > other.s_id:
+                        # sum_dist += sample.compute_euclidean_distance(other)
+                        sum_dist += matrix[(sample.s_id, other.s_id)]
+                    elif sample.s_id < other.s_id:
+                        sum_dist += matrix[(other.s_id, sample.s_id)]
+                if len(clus.samples) > 1:
+                    sil_in = float(sum_dist / (len(clus.samples) - 1))
+                else:
+                    sil_in = 0
 
                 dist_to_clus = []
                 for other_clus in self.clusters:
@@ -24,40 +31,45 @@ class AgglomerativeClustering:
                         continue
                     sum_dist = 0
                     for other in other_clus.samples:
-                        sum_dist += matrix[(sample, other)]
+                        if sample.s_id > other.s_id:
+                            sum_dist += matrix[(sample.s_id, other.s_id)]
+                        else:
+                            sum_dist += matrix[(other.s_id, sample.s_id)]
                         # sum_dist += sample.compute_euclidean_distance(other)
                     dist_to_clus.append(float(sum_dist / (len(other_clus.samples))))
                 sil_out = min(dist_to_clus)
-                sil_dict[sample.s_id] = float((sil_out - sil_in) / (max(sil_out,sil_in)))
+                if sil_in == 0:
+                    sil_dict[sample.s_id] = 0
+                else:
+                    sil_dict[sample.s_id] = float((sil_out - sil_in) / (max(sil_out, sil_in)))
 
         return sil_dict
 
-
     def compute_summery_silhouette(self, matrix):
         samples_dict = self.compute_silhouette(matrix)
-        sum_total=0
-        clus_dict={}
+        sum_total = 0
+        clus_dict = {}
         for clus in self.clusters:
-            sum_clus=0
+            sum_clus = 0
             for sample in clus.samples:
                 sum_clus += samples_dict[sample.s_id]
                 sum_total += samples_dict[sample.s_id]
 
-            clus_dict[clus.c_id] = float(sum_clus / len(clus.samples))
-        clus_dict[0] = float(sum_total / len(self.samples))
+            clus_dict[clus.c_id] = round(float((sum_clus) / len(clus.samples)), 3)
+        clus_dict[0] = round(float(sum_total / len(self.samples)), 3)
         return clus_dict
 
     def compute_rand_index(self):
         TP = 0
         TN = 0
-        number_of_pairs = math.factorial(len(self.samples))/(2*math.factorial(len(self.samples)-2))
+        number_of_pairs = math.factorial(len(self.samples)) / (2 * math.factorial(len(self.samples) - 2))
         for clus in self.clusters:
             for sample in clus.samples:
                 for other in clus.samples:
                     if sample.s_id >= other.s_id:
                         continue
                     if sample.label == other.label:
-                        TP+=1
+                        TP += 1
 
                 for other_clus in self.clusters:
                     for other in other_clus.samples:
@@ -68,7 +80,7 @@ class AgglomerativeClustering:
                         if sample.label != other.label:
                             TN += 1
 
-        return float((TP+TN)/number_of_pairs)
+        return round(float((TP + TN) / number_of_pairs), 3)
 
     def compute_dist_clusters(self, merged_id, matrix):
         dist_dict = {}
@@ -80,21 +92,20 @@ class AgglomerativeClustering:
         return dist_dict
 
     def matrix_dist(self):
-        matrix_dic={}
+        matrix_dic = {}
+        # for clus in self.clusters:
+        #     for other_clus in self.clusters:
+        #         if (clus.c_id > other_clus.c_id):
         for clus in self.clusters:
             for other_clus in self.clusters:
-                if (clus.c_id > other_clus.c_id):
-                    for sample in clus.samples:
-                        for other_sample in other_clus.samples:
-                            if (sample.s_id > other_sample.s_id):
-                                matrix_dic[(sample, other_sample)] = sample.compute_euclidean_distance(other_sample)
+                if (clus.samples[0].s_id > other_clus.samples[0].s_id):
+                    matrix_dic[(clus.samples[0].s_id, other_clus.samples[0].s_id)] = clus.samples[
+                        0].compute_euclidean_distance(other_clus.samples[0])
+
         return matrix_dic
 
-
     def run(self, max_clusters):
-        print(self.clusters[0])
-        del self.clusters[0]
-        print(self.clusters[0])
+
         sample_dist_matrix = self.matrix_dist()
         self.link.print_link()
         # merged_id = -1
@@ -104,6 +115,7 @@ class AgglomerativeClustering:
         first_clus = self.clusters[0]
         second_clus = self.clusters[0]
         min_dist = sample_dist_matrix[list(sample_dist_matrix.keys())[0]]
+        # min_dist=22222
         while (len(self.clusters) > max_clusters):
             for clus in self.clusters:
                 for other_clus in self.clusters:
@@ -111,26 +123,23 @@ class AgglomerativeClustering:
                         clus_dist = self.link.compute(clus, other_clus, sample_dist_matrix)
                         if clus_dist < min_dist:
                             min_dist = clus_dist
-                            if clus.c_id > other_clus.c_id:
-                                first_clus = other_clus
-                                second_clus = clus
-                            else:
-                                first_clus = clus
-                                second_clus = other_clus
+                            first_clus = other_clus
+                            second_clus = clus
+            self.clusters.remove(second_clus)
             first_clus.merge(second_clus)
             min_dist = max(sample_dist_matrix.values())
 
             # for sample in clus.samples:
-                        #     for other_sample in other_clus.samples:
-                        #         if (sample.s_id > other_sample.s_id):
-                        #             if (sample_dist_matrix[(sample.s_id, other_sample.s_id)] < min_dist):
-                        #                 min_dist = sample_dist_matrix[(sample.s_id, other_sample.s_id)]
-                        #                 if clus.c_id > other_clus.c_id:
-                        #                     other_clus.merge(clus)
-                        #                     # merged_id = other_clus.c_id
-                        #                 else:
-                        #                     clus.merge(other_clus)
-                        #                     # merged_id = clus.c_id
+            #     for other_sample in other_clus.samples:
+            #         if (sample.s_id > other_sample.s_id):
+            #             if (sample_dist_matrix[(sample.s_id, other_sample.s_id)] < min_dist):
+            #                 min_dist = sample_dist_matrix[(sample.s_id, other_sample.s_id)]
+            #                 if clus.c_id > other_clus.c_id:
+            #                     other_clus.merge(clus)
+            #                     # merged_id = other_clus.c_id
+            #                 else:
+            #                     clus.merge(other_clus)
+            #                     # merged_id = clus.c_id
 
             # first_clus.merge(second_clus)
             # for key in clus_dist_matrix.keys():
