@@ -55,7 +55,7 @@ class AgglomerativeClustering:
                 sum_clus += samples_dict[sample.s_id]
                 sum_total += samples_dict[sample.s_id]
 
-            clus_dict[clus.c_id] = round(float((sum_clus) / len(clus.samples)), 3)
+            clus_dict[clus.c_id] = round(float(sum_clus) / len(clus.samples), 3)
         clus_dict[0] = round(float(sum_total / len(self.samples)), 3)
         return clus_dict
 
