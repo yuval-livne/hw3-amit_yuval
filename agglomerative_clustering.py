@@ -63,8 +63,9 @@ class AgglomerativeClustering:
             for sample in clus.samples:
                 sum_clus += samples_dict[sample.s_id]
                 sum_total += samples_dict[sample.s_id]
-            clus_dict[clus.c_id] = round(float(sum_clus) / len(clus.samples), 3)  # save each cluster's silhouette
-        clus_dict[0] = round(float(sum_total / len(self.samples)), 3)  # save the whole dataset silhouette
+            # save each cluster's silhouette
+            clus_dict[clus.c_id] = format(round(float(sum_clus) / len(clus.samples), 3), '.3f')
+        clus_dict[0] = format(round(float(sum_total / len(self.samples)), 3), '.3f')  # save the dataset silhouette
         return clus_dict
 
     def compute_rand_index(self):
@@ -92,7 +93,7 @@ class AgglomerativeClustering:
                         if sample.label != other.label:  # two samples were clustered correctly into different clusters
                             tn += 1
 
-        return round(float((tp + tn) / number_of_pairs), 3)
+        return format(round(float((tp + tn) / number_of_pairs), 3), '.3f')
 
     def matrix_dist(self):
         """
